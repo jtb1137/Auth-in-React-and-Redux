@@ -1,4 +1,11 @@
+const jwt = require("jwt-simple");
 const Users = require("../models/user");
+const config = require("../config");
+
+function tokenForUser(user) {
+  const timestamp = new Date().getTime();
+  return jwt.encode({ sub: user.id, iat: timestamp }, config.secret);
+}
 
 exports.signup = function(req, res, next) {
   const email = req.body.email;
@@ -9,19 +16,17 @@ exports.signup = function(req, res, next) {
       .status(422)
       .send({ error: "You must provide an email and a password." });
   }
-  // See if user with the given email exists
+
   Users.findOne({ email: email }, function(err, existingUser) {
     if (err) {
       return next(err);
     }
 
-    // If user does exist, return an error
     if (existingUser) {
       return res.status(422).send({ error: "Email is in use." });
       // 422 - unprocessable entity
     }
 
-    // If user does not exist, create and save user record
     const user = new Users({
       email: email,
       password: password
@@ -32,7 +37,6 @@ exports.signup = function(req, res, next) {
       }
     });
 
-    // Respond to request indicating the user was created
-    res.json({ success: true });
+    res.json({ token: tokenForUser(user) });
   });
 };
