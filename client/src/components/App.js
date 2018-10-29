@@ -1,5 +1,11 @@
 import React from "react";
+import Header from "./Header";
 
-export default () => {
-  return <div>Hi, this is the App Component</div>;
+export default ({ children }) => {
+  return (
+    <div>
+      <Header />
+      {children}
+    </div>
+  );
 };
